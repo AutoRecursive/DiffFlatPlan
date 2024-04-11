@@ -1,7 +1,6 @@
 using JuMP
 using Ipopt
 using Plots
-include("BezierCurves/BezierCurves.jl")
 
 # Bicycle model parameters
 const L = 2.0  # wheelbase (m)
@@ -39,7 +38,7 @@ function optimize_trajectory(num_control_points)
     @NLobjective(model, Min,
         sum(
             (bezier_derivative(i / num_samples, [xc'; yc'])[1] - v_desired)^2 +
-            (bezier_value(i / num_samples, [xc'; yc'])[2] - 3.75)^2 +
+            ifelse((i - 1) * dt > 3,  (bezier_value(i / num_samples, [xc'; yc'])[2] - y_desired)^2, 0) +
             (bezier_derivative(i / num_samples, [bezier_derivative(i / num_samples, [xc'; yc'])[1]; yc'])[1])^2 +
             (bezier_derivative(i / num_samples, [bezier_derivative(i / num_samples, [bezier_derivative(i / num_samples, [xc'; yc'])[1]; yc'])[1]; yc'])[1])^2 +
             (atan(clamp(bezier_derivative(i / num_samples, [xc'; yc'])[2] / (bezier_derivative(i / num_samples, [xc'; yc'])[1] + ε), -10, 10)))^2
